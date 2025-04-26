@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Danh sách phòng trọ</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" 
+          integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h1 class="text-center mb-4">Danh sách phòng trọ</h1>
+      <div class="d-flex justify-content-between mb-3">
+        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createRoomModal">Tạo mới</button>
+        <input type="text" class="form-control w-25" placeholder="Tìm kiếm...">
+      </div>
+      <form id="deleteForm" method="post" th:action="@{/rooms/delete}" onsubmit="return false;">
+        <table class="table table-bordered table-striped">
+          <thead class="table-dark">
+            <tr>
+              <th>STT</th>
+              <th>Tên người thuê</th>
+              <th>Số điện thoại</th>
+              <th>Ngày bắt đầu thuê</th>
+              <th>Hình thức thanh toán</th>
+              <th>Ghi chú</th>
+              <th>Chọn</th>
+            </tr>
+          </thead>
+          <tbody>
+  <tr th:each="room, iterStat : ${rooms}">
+    <td th:text="${iterStat.count}"></td>
+    <td th:text="${room.tenant_name}"></td>
+    <td th:text="${room.phoneNumber}"></td> <!-- Matches getPhoneNumber() -->
+    <td th:text="${room.start_date}"></td> <!-- Matches getStart_date() -->
+    <td th:text="${room.payment_method_id != null ? (room.payment_method_id == 1 ? 'Theo tháng' : (room.payment_method_id == 3 ? 'Theo quý' : 'Theo năm')) : 'Không xác định'}"></td>
+    <td th:text="${room.notes}"></td>
+    <td>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" th:id="'selectRow' + ${room.room_id}" th:name="roomIds" th:value="${room.room_id}">
+        <label class="form-check-label" th:for="'selectRow' + ${room.room_id}">Chọn</label>
+      </div>
+    </td>
+  </tr>
+</tbody>
+        </table>
+        <button type="button" class="btn btn-danger mt-3" id="deleteButton">Xóa các mục đã chọn</button>
+      </form>
+    </div>
+    
+    <!-- Create Room Modal -->
+    <div class="modal fade" id="createRoomModal" tabindex="-1" aria-labelledby="createRoomModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="createRoomModalLabel">Tạo phòng trọ mới</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form id="createRoomForm" th:action="@{/rooms/create}" method="post" enctype="multipart/form-data">
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="tenantName" class="form-label">Tên người thuê</label>
+                  <input type="text" class="form-control" id="tenantName" name="tenant_name" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="phoneNumber" class="form-label">Số điện thoại</label>
+                  <input type="text" class="form-control" id="phoneNumber" name="phone_number" required>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label for="startDate" class="form-label">Ngày bắt đầu thuê</label>
+                  <input type="date" class="form-control" id="startDate" name="start_date" required>
+                </div>
+                <div class="col-md-6">
+                  <label for="paymentMethod" class="form-label">Hình thức thanh toán</label>
+                  <select class="form-select" id="paymentMethod" name="payment_method_id" required>
+                    <option value="1">Theo tháng</option>
+                    <option value="3">Theo quý</option>
+                    <option value="12">Theo năm</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-3">
+                <label for="notes" class="form-label">Ghi chú</label>
+                <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                <button type="submit" class="btn btn-primary">Lưu</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Xác nhận</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Bạn có chắc muốn xóa các phòng đã chọn không?
+          </div>
+          <div class="modal-footer" style="justify-content: center;">
+            <div class="row" style="width: 100%;">
+              <div class="col-6">
+                <button type="button" class="btn btn-secondary w-100" id="confirmDelete">Có</button>
+              </div>
+              <div class="col-6">
+                <button type="button" class="btn btn-outline-secondary w-100" data-bs-dismiss="modal">Không</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" 
+    integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+
+    <script>
+      // Image preview functionality
+      document.getElementById('roomImage').addEventListener('change', function(event) {
+        const imagePreview = document.getElementById('imagePreview');
+        const file = event.target.files[0];
+
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            imagePreview.classList.remove('d-none');
+          }
+          reader.readAsDataURL(file);
+        } else {
+          imagePreview.src = '';
+          imagePreview.classList.add('d-none');
+        }
+      });
+
+      // Delete confirmation functionality
+      document.getElementById('deleteButton').addEventListener('click', function() {
+  // Hiển thị modal xác nhận
+  const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  deleteConfirmModal.show();
+});
+
+      // Handle confirmation button click
+     document.getElementById('deleteButton').addEventListener('click', function() {
+  // Hiển thị modal xác nhận
+  const deleteConfirmModal = new bootstrap.Modal(document.getElementById('deleteConfirmModal'));
+  deleteConfirmModal.show();
+});
+
+document.getElementById('confirmDelete').addEventListener('click', function() {
+  // Gửi form khi nhấn "Có"
+  document.getElementById('deleteForm').setAttribute('onsubmit', '');
+  document.getElementById('deleteForm').submit();
+});
+    </script>
+  </body>
+</html>
